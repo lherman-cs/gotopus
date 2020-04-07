@@ -5,10 +5,11 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
 )
 
 var (
-	shellPath string
+  executeCmd func(context.Context, string) *exec.Cmd
 )
 
 // Config represents how to run arbitrary tasks
@@ -47,7 +48,7 @@ func (s *Step) Execute(ctx context.Context, stdout, stderr io.Writer) error {
 		stderr = stdout
 	}
 
-	cmd := exec.CommandContext(ctx, shellPath, "-c", s.Run)
+	cmd := executeCmd(ctx, s.Run)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	err := cmd.Run()
@@ -55,19 +56,31 @@ func (s *Step) Execute(ctx context.Context, stdout, stderr io.Writer) error {
 }
 
 func init() {
-	shellPath = os.Getenv("SHELL")
-	// If we can't find the current shell, we'll try to lookup the shell paths
-	supportedShells := []string{"bash", "sh", "zsh"}
-	if shellPath == "" {
-		for _, sh := range supportedShells {
-			path, err := exec.LookPath(sh)
-			if err == nil {
-				shellPath = path
-			}
-		}
-	}
+  if runtime.GOOS == "windows" {
+    executeCmd = func(ctx context.Context, cmd string) *exec.Cmd {
+      return exec.CommandContext(ctx, "cmd", "/C", cmd)
+    }
+  } else {
+    shellPath := os.Getenv("SHELL")
+    // If we can't find the current shell, we'll try to lookup the shell paths
+    supportedShells := []string{"bash", "sh", "zsh"}
+    if shellPath == "" {
+      for _, sh := range supportedShells {
+        path, err := exec.LookPath(sh)
+        if err == nil {
+          shellPath = path
+        }
+      }
+    }
 
-	if shellPath == "" {
+    if shellPath != "" {
+      executeCmd = func(ctx context.Context, cmd string) *exec.Cmd {
+        return exec.CommandContext(ctx, shellPath, "-c", cmd)
+      }
+    }
+  }
+
+	if executeCmd == nil {
 		panic("failed to find a shell")
 	}
 }
