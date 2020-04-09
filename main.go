@@ -1,27 +1,42 @@
 package main
 
 import (
+	"flag"
 	"os"
-
-	"gopkg.in/yaml.v2"
+  "fmt"
 )
 
 func main() {
-	cfgPath := os.Args[1]
-	f, err := os.Open(cfgPath)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
+  flag.Usage = func() {
+    fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s <config_path> ...\n\n", os.Args[0])
+    flag.PrintDefaults()
+  }
 
-	var cfg Config
-	err = yaml.NewDecoder(f).Decode(&cfg)
-	if err != nil {
-		panic(err)
-	}
+  var maxWorkers uint64
+  flag.Uint64Var(&maxWorkers, "max_workers", 0, "limits the number of workers that can run concurrently (default 0 or limitless)")
+  flag.Parse()
+  args := flag.Args()
 
-	err = Run(cfg, 0)
-	if err != nil {
-		panic(err)
-	}
+  if len(args) == 0 {
+    flag.Usage()
+    os.Exit(2)
+  }
+
+  configs := make([]Config, len(args))
+  for i, configPath := range args {
+    cfg, err := NewConfig(configPath)
+    if err != nil {
+      fmt.Println(err)
+      os.Exit(2)
+    }
+    configs[i] = cfg
+  }
+
+  for _, config := range configs {
+    err := Run(config, maxWorkers)
+    if err != nil {
+      fmt.Println(err)
+      os.Exit(2)
+    }
+  }
 }
