@@ -20,9 +20,8 @@ func main() {
 		panic(err)
 	}
 
-	Run(cfg, 0)
-	// err = Run(cfg, 0)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err = Run(cfg, 0)
+	if err != nil {
+		panic(err)
+	}
 }
