@@ -2,41 +2,41 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
-  "fmt"
 )
 
 func main() {
-  flag.Usage = func() {
-    fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s <config_path> ...\n\n", os.Args[0])
-    flag.PrintDefaults()
-  }
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s <config_path> ...\n\n", os.Args[0])
+		flag.PrintDefaults()
+	}
 
-  var maxWorkers uint64
-  flag.Uint64Var(&maxWorkers, "max_workers", 0, "limits the number of workers that can run concurrently (default 0 or limitless)")
-  flag.Parse()
-  args := flag.Args()
+	var maxWorkers uint64
+	flag.Uint64Var(&maxWorkers, "max_workers", 0, "limits the number of workers that can run concurrently (default 0 or limitless)")
+	flag.Parse()
+	args := flag.Args()
 
-  if len(args) == 0 {
-    flag.Usage()
-    os.Exit(2)
-  }
+	if len(args) == 0 {
+		flag.Usage()
+		os.Exit(2)
+	}
 
-  configs := make([]Config, len(args))
-  for i, configPath := range args {
-    cfg, err := NewConfig(configPath)
-    if err != nil {
-      fmt.Println(err)
-      os.Exit(2)
-    }
-    configs[i] = cfg
-  }
+	configs := make([]Config, len(args))
+	for i, configPath := range args {
+		cfg, err := NewConfig(configPath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(2)
+		}
+		configs[i] = cfg
+	}
 
-  for _, config := range configs {
-    err := Run(config, maxWorkers)
-    if err != nil {
-      fmt.Println(err)
-      os.Exit(2)
-    }
-  }
+	for _, config := range configs {
+		err := Run(config, maxWorkers)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(2)
+		}
+	}
 }

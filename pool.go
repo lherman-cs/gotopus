@@ -64,23 +64,23 @@ func (w *Worker) Execute(n *Node) error {
 		jobName = n.ID
 	}
 
-  env := make(Env)
-  env.SetBuiltin("JOB_ID", n.ID)
-  env.SetBuiltin("JOB_NAME", n.Job.Name)
-  env.SetBuiltin("JOB_DEPENDENCIES", n.DependenciesString())
-  env.SetBuiltin("JOB_DEPENDENTS", n.DependentsString())
+	env := make(Env)
+	env.SetBuiltin("JOB_ID", n.ID)
+	env.SetBuiltin("JOB_NAME", n.Job.Name)
+	env.SetBuiltin("JOB_DEPENDENCIES", n.DependenciesString())
+	env.SetBuiltin("JOB_DEPENDENTS", n.DependentsString())
 	for _, step := range n.Job.Steps {
-    env.SetBuiltin("WORKER_ID", w.id)
-    env.SetBuiltin("STEP_NAME", step.Name)
-    env.SetBuiltin("STEP_RUN", step.Run)
+		env.SetBuiltin("WORKER_ID", w.id)
+		env.SetBuiltin("STEP_NAME", step.Name)
+		env.SetBuiltin("STEP_RUN", step.Run)
 
-    userEnv := make(Env)
-    for k, v := range step.Env {
-      userEnv.Set(k, v)
-    }
+		userEnv := make(Env)
+		for k, v := range step.Env {
+			userEnv.Set(k, v)
+		}
 		modifier := ModifierWithFields("worker", w.id, "job", jobName, "step", step.Name)
 		cmd := executeCmd(w.ctx, step.Run)
-    cmd.Env = append(env.Encode(), userEnv.Encode()...)
+		cmd.Env = append(env.Encode(), userEnv.Encode()...)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			return err

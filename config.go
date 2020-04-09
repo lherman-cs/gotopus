@@ -20,9 +20,9 @@ type Job struct {
 }
 
 type Step struct {
-	Name string `yaml:"name"`
-	Run  string `yaml:"run"`
-  Env  map[string]string `yaml:"env"`
+	Name string            `yaml:"name"`
+	Run  string            `yaml:"run"`
+	Env  map[string]string `yaml:"env"`
 }
 
 func NewConfig(path string) (cfg Config, err error) {
@@ -33,4 +33,3 @@ func NewConfig(path string) (cfg Config, err error) {
 	err = yaml.NewDecoder(f).Decode(&cfg)
 	return
 }
-
