@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 )
 
 type ModifierFunc func(line string) string
@@ -39,5 +40,19 @@ func ModifierWithFields(fields ...interface{}) ModifierFunc {
 
   return ModifierFunc(func(line string) string {
     return prefix + line
+  })
+}
+
+type WriterFunc func(p []byte) (int, error)
+func (f WriterFunc) Write(p []byte) (int, error) {
+  return f(p)
+}
+
+func WriterSync(w io.Writer) io.Writer {
+  var m sync.Mutex
+  return WriterFunc(func(p []byte) (int, error) {
+    m.Lock()
+    defer m.Unlock()
+    return w.Write(p)
   })
 }
