@@ -14,17 +14,17 @@ func TestPoolStartWithConcurrentJobs(t *testing.T) {
 	workers := runtime.NumCPU()
 	duration := time.Second * 2
 	durationPrecision := time.Millisecond * 500
-	submit := PoolStart(ctx, workers, 0)
+	submit := PoolStart(ctx, uint64(workers))
 	var wg sync.WaitGroup
 
 	start := time.Now()
 
 	wg.Add(workers)
 	for i := 0; i < workers; i++ {
-		submit(func(id int) {
+		submit(PoolJob(func(w Worker) {
 			time.Sleep(duration)
 			wg.Done()
-		})
+		}))
 	}
 	wg.Wait()
 

@@ -7,7 +7,7 @@ import (
 
 type Node struct {
 	Job
-  ID           string
+	ID           string
 	Dependencies map[*Node]struct{}
 	Dependents   map[*Node]struct{}
 }
@@ -15,7 +15,7 @@ type Node struct {
 func NewNode(j Job, id string) *Node {
 	return &Node{
 		Job:          j,
-    ID:           id,
+		ID:           id,
 		Dependencies: make(map[*Node]struct{}),
 		Dependents:   make(map[*Node]struct{}),
 	}

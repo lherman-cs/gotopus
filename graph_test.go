@@ -114,16 +114,16 @@ func TestNewGraphWithNoDependencies(t *testing.T) {
 		t.Fatalf("expected to have 2 dependents, but got %d", len(graph.Dependents))
 	}
 
-	expectedLabels := map[string]struct{}{
+	expectedIDs := map[string]struct{}{
 		"job1": struct{}{},
 		"job2": struct{}{},
 	}
 
 	for dependent := range graph.Dependents {
-		if _, ok := expectedLabels[dependent.Label]; !ok {
-			t.Fatalf("%s is not an expected label", dependent.Label)
+		if _, ok := expectedIDs[dependent.ID]; !ok {
+			t.Fatalf("%s is not an expected label", dependent.ID)
 		}
-		delete(expectedLabels, dependent.Label)
+		delete(expectedIDs, dependent.ID)
 	}
 }
 
@@ -147,15 +147,15 @@ func TestNewGraphWithDependencies(t *testing.T) {
 		t.Fatalf("expected to have 2 dependents, but got %d", len(graph.Dependents))
 	}
 
-	expectedLabels := map[string][]string{
+	expectedIDs := map[string][]string{
 		"job1": []string{"job3"},
 		"job2": nil,
 	}
 
 	for dependent := range graph.Dependents {
-		children, ok := expectedLabels[dependent.Label]
+		children, ok := expectedIDs[dependent.ID]
 		if !ok {
-			t.Fatalf("%s is not an expected label", dependent.Label)
+			t.Fatalf("%s is not an expected label", dependent.ID)
 		}
 
 		if len(dependent.Dependents) != len(children) {
@@ -165,12 +165,12 @@ func TestNewGraphWithDependencies(t *testing.T) {
 		if len(children) > 0 {
 			child := children[0]
 			for d := range dependent.Dependents {
-				if d.Label != child {
-					t.Fatalf("expected the child to be labeled \"%s\", but instead \"%s\"", child, d.Label)
+				if d.ID != child {
+					t.Fatalf("expected the child to be labeled \"%s\", but instead \"%s\"", child, d.ID)
 				}
 			}
 		}
-		delete(expectedLabels, dependent.Label)
+		delete(expectedIDs, dependent.ID)
 	}
 }
 

@@ -14,7 +14,7 @@ type Config struct {
 
 // Job represents a metadata how to execute
 type Job struct {
-  Name  string   `yaml:"name"`
+	Name  string   `yaml:"name"`
 	Needs []string `yaml:"needs"`
 	Steps []Step   `yaml:"steps"`
 }
@@ -25,10 +25,10 @@ type Step struct {
 }
 
 func NewConfig(path string) (cfg Config, err error) {
-  f, err := os.Open(path)
-  if err != nil {
-    return cfg, err
-  }
-  err = yaml.NewDecoder(f).Decode(&cfg)
-  return
+	f, err := os.Open(path)
+	if err != nil {
+		return cfg, err
+	}
+	err = yaml.NewDecoder(f).Decode(&cfg)
+	return
 }
