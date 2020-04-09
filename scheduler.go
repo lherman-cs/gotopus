@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"os"
-	"runtime"
+  "os"
 )
 
 type ResultNode struct {
@@ -25,11 +24,7 @@ outer:
 	return runnableNodes
 }
 
-func Run(cfg Config, workers int) error {
-	if workers <= 0 {
-		workers = runtime.NumCPU()
-	}
-
+func Run(cfg Config, maxWorkers uint64) error {
 	graph, err := NewGraph(cfg)
 	if err != nil {
 		return err
@@ -42,14 +37,13 @@ func Run(cfg Config, workers int) error {
 
 	queueSize := 1024
 	doneQueue := make(chan ResultNode, queueSize)
-	submit := PoolStart(ctx, workers, queueSize)
+	submit := PoolStart(ctx, maxWorkers)
 	submitNode := func(n *Node) {
-		submit(func(workerID int) {
-			// TODO
-			stdout := os.Stdout
-			stderr := os.Stderr
-			err := n.Execute(ctx, stdout, stderr)
-			doneQueue <- ResultNode{n, err}
+		submit(func(worker Worker) {
+      worker.Stdout = os.Stdout
+      worker.Stderr = os.Stderr
+      err := worker.Execute(n)
+      doneQueue <- ResultNode{n, err}
 		})
 	}
 

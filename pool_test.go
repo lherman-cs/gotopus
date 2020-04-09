@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -10,7 +11,7 @@ import (
 func TestPoolStartWithConcurrentJobs(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	workers := 2
+	workers := runtime.NumCPU()
 	duration := time.Second * 2
 	durationPrecision := time.Millisecond * 500
 	submit := PoolStart(ctx, workers, 0)

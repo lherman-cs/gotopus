@@ -7,15 +7,15 @@ import (
 
 type Node struct {
 	Job
-	Label        string
+  ID           string
 	Dependencies map[*Node]struct{}
 	Dependents   map[*Node]struct{}
 }
 
-func NewNode(j Job, l string) *Node {
+func NewNode(j Job, id string) *Node {
 	return &Node{
 		Job:          j,
-		Label:        l,
+    ID:           id,
 		Dependencies: make(map[*Node]struct{}),
 		Dependents:   make(map[*Node]struct{}),
 	}
@@ -56,7 +56,7 @@ func detectCircularDependency(root *Node) error {
 	if len(cycle) > 0 {
 		deps := make([]string, len(cycle)-1)
 		for i, c := range cycle[:len(cycle)-1] {
-			deps[i] = c.Label
+			deps[i] = c.ID
 		}
 		depsStr := strings.Join(deps, "->")
 		return fmt.Errorf("detected a circular dependency: %s", depsStr)
