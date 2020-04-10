@@ -21,24 +21,6 @@ func NewNode(j Job, id string) *Node {
 	}
 }
 
-func joinNodes(nodes map[*Node]struct{}, sep string) string {
-	ids := make([]string, len(nodes))
-	var i int
-	for node := range nodes {
-		ids[i] = node.ID
-		i++
-	}
-	return strings.Join(ids, sep)
-}
-
-func (n *Node) DependenciesString() string {
-	return joinNodes(n.Dependencies, ",")
-}
-
-func (n *Node) DependentsString() string {
-	return joinNodes(n.Dependents, ",")
-}
-
 func detectCircularDependency(root *Node) error {
 	unresolved := make(map[*Node]struct{})
 	resolved := make(map[*Node]struct{})

@@ -69,14 +69,11 @@ func (w *Worker) Execute(n *Node) error {
 	jobEnv := make(Env)
 	jobEnv.SetBuiltin("JOB_ID", n.ID)
 	jobEnv.SetBuiltin("JOB_NAME", n.Job.Name)
-	jobEnv.SetBuiltin("JOB_DEPENDENCIES", n.DependenciesString())
-	jobEnv.SetBuiltin("JOB_DEPENDENTS", n.DependentsString())
 	jobEnvEncoded := append(w.Env, jobEnv.Encode()...)
 	for _, step := range n.Job.Steps {
 		stepEnv := make(Env)
 		stepEnv.SetBuiltin("WORKER_ID", w.id)
 		stepEnv.SetBuiltin("STEP_NAME", step.Name)
-		stepEnv.SetBuiltin("STEP_RUN", step.Run)
 
 		for k, v := range step.Env {
 			stepEnv.Set(k, v)
