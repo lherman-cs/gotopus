@@ -33,7 +33,7 @@ func main() {
 	}
 
 	for _, config := range configs {
-		err := Run(config, maxWorkers)
+		err := Run(config, os.Stdout, os.Stderr, maxWorkers)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(2)

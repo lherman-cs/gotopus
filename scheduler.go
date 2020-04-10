@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"os"
+	"io"
 )
 
 type ResultNode struct {
@@ -24,7 +24,7 @@ outer:
 	return runnableNodes
 }
 
-func Run(cfg Config, maxWorkers uint64) error {
+func Run(cfg Config, stdout, stderr io.Writer, maxWorkers uint64) error {
 	graph, err := NewGraph(cfg)
 	if err != nil {
 		return err
@@ -35,8 +35,8 @@ func Run(cfg Config, maxWorkers uint64) error {
 	doneNodes := make(map[*Node]struct{})
 	waitingNodes := make(map[*Node]struct{})
 
-	stdout := WriterSync(os.Stdout)
-	stderr := WriterSync(os.Stderr)
+	stdout = WriterSync(stdout)
+	stderr = WriterSync(stderr)
 	queueSize := 1024
 	doneQueue := make(chan ResultNode, queueSize)
 	submit := PoolStart(ctx, maxWorkers)
