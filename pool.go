@@ -49,6 +49,7 @@ type Worker struct {
 	id     uint64
 	Stdout io.Writer
 	Stderr io.Writer
+	Env    []string
 }
 
 func (w *Worker) Execute(n *Node) error {
@@ -64,23 +65,24 @@ func (w *Worker) Execute(n *Node) error {
 		jobName = n.ID
 	}
 
-	env := make(Env)
-	env.SetBuiltin("JOB_ID", n.ID)
-	env.SetBuiltin("JOB_NAME", n.Job.Name)
-	env.SetBuiltin("JOB_DEPENDENCIES", n.DependenciesString())
-	env.SetBuiltin("JOB_DEPENDENTS", n.DependentsString())
+	jobEnv := make(Env)
+	jobEnv.SetBuiltin("JOB_ID", n.ID)
+	jobEnv.SetBuiltin("JOB_NAME", n.Job.Name)
+	jobEnv.SetBuiltin("JOB_DEPENDENCIES", n.DependenciesString())
+	jobEnv.SetBuiltin("JOB_DEPENDENTS", n.DependentsString())
+	jobEnvEncoded := append(w.Env, jobEnv.Encode()...)
 	for _, step := range n.Job.Steps {
-		env.SetBuiltin("WORKER_ID", w.id)
-		env.SetBuiltin("STEP_NAME", step.Name)
-		env.SetBuiltin("STEP_RUN", step.Run)
+		stepEnv := make(Env)
+		stepEnv.SetBuiltin("WORKER_ID", w.id)
+		stepEnv.SetBuiltin("STEP_NAME", step.Name)
+		stepEnv.SetBuiltin("STEP_RUN", step.Run)
 
-		userEnv := make(Env)
 		for k, v := range step.Env {
-			userEnv.Set(k, v)
+			stepEnv.Set(k, v)
 		}
 		modifier := ModifierWithFields("worker", w.id)
 		cmd := executeCmd(w.ctx, step.Run)
-		cmd.Env = append(env.Encode(), userEnv.Encode()...)
+		cmd.Env = append(jobEnvEncoded, stepEnv.Encode()...)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			return err
@@ -111,9 +113,10 @@ type PoolJob func(Worker)
 
 // PoolStart starts a pool of workers in different goroutines
 func PoolStart(ctx context.Context, maxWorkers uint64) func(PoolJob) {
+	env := os.Environ()
 	jobChan := make(chan PoolJob)
 	createWorker := func(id uint64) {
-		worker := Worker{ctx: ctx, id: id}
+		worker := Worker{ctx: ctx, id: id, Env: env}
 		for {
 			select {
 			case job := <-jobChan:
