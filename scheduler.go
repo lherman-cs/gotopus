@@ -35,8 +35,6 @@ func Run(cfg Config, stdout, stderr io.Writer, maxWorkers uint64) error {
 	doneNodes := make(map[*Node]struct{})
 	waitingNodes := make(map[*Node]struct{})
 
-	stdout = WriterSync(stdout)
-	stderr = WriterSync(stderr)
 	queueSize := 1024
 	doneQueue := make(chan ResultNode, queueSize)
 	submit := PoolStart(ctx, maxWorkers)
