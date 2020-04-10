@@ -1,6 +1,9 @@
 package main
 
 import (
+	"io"
+	"net/http"
+	"net/url"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -39,13 +42,29 @@ type Step struct {
 	Env map[string]string `yaml:"env"`
 }
 
+func readerFromURL(path string) (io.ReadCloser, error) {
+	res, err := http.Get(path)
+	if err != nil {
+		return nil, err
+	}
+	return res.Body, nil
+}
+
 // NewConfig decodes from path. Path can be either an absolute/relative path
 // to a file or a url.
 func NewConfig(path string) (cfg Config, err error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return cfg, err
+	var readCloser io.ReadCloser
+	_, err = url.ParseRequestURI(path)
+	if err == nil {
+		readCloser, err = readerFromURL(path)
+	} else {
+		readCloser, err = os.Open(path)
 	}
-	err = yaml.NewDecoder(f).Decode(&cfg)
+
+	if err != nil {
+		return
+	}
+	defer readCloser.Close()
+	err = yaml.NewDecoder(readCloser).Decode(&cfg)
 	return
 }
