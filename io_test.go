@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -23,6 +24,30 @@ func TestCopyMultiLine(t *testing.T) {
 	if out != expected {
 		t.Fatalf("expected:\n%s\ngot:\n%s", expected, out)
 	}
+}
+
+func benchmarkCopy(b *testing.B, lines, length int) {
+	text := strings.Repeat("t", length) + "\n"
+	text = strings.Repeat(text, lines)
+	for i := 0; i < b.N; i++ {
+		func() {
+			file, err := os.Create("io.test")
+			if err != nil {
+				b.Fatalf("Unable to create file: %v", err)
+			}
+			defer func() {
+				file.Close()
+				os.Remove(file.Name())
+			}()
+
+			reader := strings.NewReader(text)
+			Copy(file, reader)
+		}()
+	}
+}
+
+func BenchmarkCopy1000Lines100Length(b *testing.B) {
+	benchmarkCopy(b, 1000, 100)
 }
 
 func TestModifierWithFieldsInvalidArgs(t *testing.T) {
