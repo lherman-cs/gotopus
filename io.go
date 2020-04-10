@@ -14,13 +14,14 @@ func Copy(dst io.Writer, src io.Reader, modifierFuncs ...ModifierFunc) error {
 	scanner := bufio.NewScanner(src)
 	bufWriter := bufio.NewWriter(dst)
 	defer bufWriter.Flush()
-	if scanner.Scan() {
+	for scanner.Scan() {
 		line := scanner.Text()
 		for _, modifierFunc := range modifierFuncs {
 			line = modifierFunc(line)
 		}
 		bufWriter.WriteString(line)
-		bufWriter.WriteByte('\n')
+		bufWriter.WriteString("\n")
+		bufWriter.Flush()
 	}
 	return scanner.Err()
 }
