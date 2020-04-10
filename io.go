@@ -21,7 +21,6 @@ func Copy(dst io.Writer, src io.Reader, modifierFuncs ...ModifierFunc) error {
 		}
 		bufWriter.WriteString(line)
 		bufWriter.WriteString("\n")
-		bufWriter.Flush()
 	}
 	return scanner.Err()
 }
