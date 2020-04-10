@@ -90,9 +90,15 @@ func (w *Worker) Execute(n *Node) error {
 			return err
 		}
 
-		go Copy(w.Stdout, stdout, modifier)
+		err = cmd.Start()
+		if err != nil {
+			return err
+		}
+
 		go Copy(w.Stderr, stderr, modifier)
-		err = cmd.Run()
+		Copy(w.Stdout, stdout, modifier)
+
+		err = cmd.Wait()
 		if err != nil {
 			return err
 		}
