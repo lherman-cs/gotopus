@@ -78,7 +78,7 @@ func (w *Worker) Execute(n *Node) error {
 		for k, v := range step.Env {
 			userEnv.Set(k, v)
 		}
-		modifier := ModifierWithFields("worker", w.id, "job", jobName, "step", step.Name)
+		modifier := ModifierWithFields("worker", w.id)
 		cmd := executeCmd(w.ctx, step.Run)
 		cmd.Env = append(env.Encode(), userEnv.Encode()...)
 		stdout, err := cmd.StdoutPipe()
