@@ -5,13 +5,18 @@ import (
 	"strings"
 )
 
+// Node is a graph node. It's used to represent a dependency graph
 type Node struct {
 	Job
-	ID           string
+	// ID is a unique ID of the node within a graph
+	ID string
+	// Dependencies is a set of nodes that are required to resolve a node
 	Dependencies map[*Node]struct{}
-	Dependents   map[*Node]struct{}
+	// Dependents is a set of nodes that are waiting for a node to resolve
+	Dependents map[*Node]struct{}
 }
 
+// NewNode is a constructor for a node
 func NewNode(j Job, id string) *Node {
 	return &Node{
 		Job:          j,
@@ -21,6 +26,9 @@ func NewNode(j Job, id string) *Node {
 	}
 }
 
+// detectCircularDependency traverses the whole graph and find a circular dependency.
+// When a circular dependency, the function will return an error with a friendly message
+// to show where the circular dependency occured.
 func detectCircularDependency(root *Node) error {
 	unresolved := make(map[*Node]struct{})
 	resolved := make(map[*Node]struct{})
@@ -64,6 +72,7 @@ func detectCircularDependency(root *Node) error {
 	return nil
 }
 
+// NewGraph constructs a dependency graph based on given config
 func NewGraph(cfg Config) (*Node, error) {
 	nodes := make(map[string]*Node)
 	for id, job := range cfg.Jobs {
