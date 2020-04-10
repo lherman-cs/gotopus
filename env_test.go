@@ -35,9 +35,24 @@ func TestEncode(t *testing.T) {
 	env := make(Env)
 	key, value := "TEST", "VALUE"
 	env.Set(key, value)
+	env.SetBuiltin(key, value)
 	encoded := env.Encode()
-	expected := []string{"TEST=VALUE"}
-	if encoded[0] != expected[0] {
-		t.Fatalf("expected %s, but got %s", expected[0], encoded[0])
+	if len(encoded) != 2 {
+		t.Fatalf("expected to get 2 key-value pairs, but got %d", len(encoded))
+	}
+
+	expecteds := []string{"TEST=VALUE", "GOTOPUS_TEST=VALUE"}
+	var expected string
+	for len(expecteds) > 0 {
+		expected, expecteds = expecteds[0], expecteds[1:]
+		var found bool
+		for _, e := range encoded {
+			if e == expected {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("expected to have %s", expected)
+		}
 	}
 }

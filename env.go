@@ -21,6 +21,7 @@ func (e Env) Encode() []string {
 	var i int
 	for k, v := range e {
 		encoded[i] = fmt.Sprintf("%s=%v", k, v)
+		i++
 	}
 	return encoded
 }
