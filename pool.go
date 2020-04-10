@@ -56,8 +56,9 @@ func (w *Worker) Execute(n *Node) error {
 	if w.Stdout == nil {
 		return fmt.Errorf("Stdout is required to be not nil")
 	}
+
 	if w.Stderr == nil {
-		return fmt.Errorf("Stderr is required to be not nil")
+		w.Stderr = w.Stdout
 	}
 
 	jobName := n.Job.Name
@@ -80,28 +81,11 @@ func (w *Worker) Execute(n *Node) error {
 		for k, v := range step.Env {
 			stepEnv.Set(k, v)
 		}
-		modifier := ModifierWithFields("worker", w.id)
 		cmd := executeCmd(w.ctx, step.Run)
 		cmd.Env = append(jobEnvEncoded, stepEnv.Encode()...)
-		stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			return err
-		}
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			return err
-		}
-
-		err = cmd.Start()
-		if err != nil {
-			return err
-		}
-
-		go Copy(w.Stderr, stderr, modifier)
-		Copy(w.Stdout, stdout, modifier)
-
-		err = cmd.Wait()
-		if err != nil {
+		cmd.Stdout = w.Stdout
+		cmd.Stderr = w.Stderr
+		if err := cmd.Run(); err != nil {
 			return err
 		}
 	}
