@@ -25,6 +25,26 @@ func TestCopyMultiLine(t *testing.T) {
 	}
 }
 
+func TestModifierWithFieldsInvalidArgs(t *testing.T) {
+	defer func() {
+		recover()
+	}()
+	ModifierWithFields("worker")
+	t.Fatal("expected to panic when the size of arguments is not valid")
+}
+
+func TestModifierWithFields(t *testing.T) {
+	modifierFunc := ModifierWithFields("worker", 1, "name", "bob")
+	line := "hello world"
+
+	expectedPrefix := "[worker=1,name=bob] "
+	expectedOutput := expectedPrefix + line
+	actualOutput := modifierFunc(line)
+	if actualOutput != expectedOutput {
+		t.Fatalf("expected:\n%s\ngot:%s\n", expectedOutput, actualOutput)
+	}
+}
+
 func TestWriterSync(t *testing.T) {
 	var buf bytes.Buffer
 
