@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	// executeCmd is a cross-platform function to run an arbitrary shell command
 	executeCmd func(context.Context, string) *exec.Cmd
 )
 
@@ -44,14 +45,29 @@ func init() {
 	}
 }
 
+// Worker executes given node in a separate goroutine.
 type Worker struct {
-	ctx    context.Context
-	id     uint64
+	ctx context.Context
+	id  uint64
+	// Stdout is used to redirect the output from the shell command stdout
 	Stdout io.Writer
+	// Stderr is used to redirect the output from the shell command stderr.
+	// If nil, Stdout will be instead.
 	Stderr io.Writer
 	Env    []string
 }
 
+// Execute executes given job from n. Worker will execute steps from the given job
+// in sequential order. If any of the steps fails, Execute will return early
+// Environment variables will be set appropriate before the shell command runs.
+// There are 2 kinds of environment variables: builtin and user-space.
+// Following are available builtin environment variables:
+// 	- GOTOPUS_JOB_ID
+//  - GOTOPUS_JOB_NAME
+//  - GOTOPUS_STEP_NAME
+//  - GOTOPUS_WORKER_ID
+//
+// User-space environment variables are given from the config
 func (w *Worker) Execute(n *Node) error {
 	if w.Stdout == nil {
 		return fmt.Errorf("Stdout is required to be not nil")
@@ -90,9 +106,22 @@ func (w *Worker) Execute(n *Node) error {
 	return nil
 }
 
+// PoolJob represents a job unit that can be submitted to a Pool.
 type PoolJob func(Worker)
 
-// PoolStart starts a pool of workers in different goroutines
+// PoolStart starts a pool of workers in different goroutines lazily with
+// maxWorkers as the limit. The caller can submit jobs by using the function
+// from the return value.
+// For example:
+// 	submit := PoolStart(ctx, 0)
+//  submit(func(w Worker){
+//    // do work here. This work will be done concurrently
+//  })
+//
+// If ctx gets cancelled, all of the workers will exit and all resources will be freed.
+//
+// If maxWorkers is 0, the pool can grow infinitely until it runs out of memory
+// to spawn more workers.
 func PoolStart(ctx context.Context, maxWorkers uint64) func(PoolJob) {
 	env := os.Environ()
 	jobChan := make(chan PoolJob)
