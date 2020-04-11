@@ -3,8 +3,8 @@ package main
 import (
 	"io"
 	"net/http"
-	"net/url"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -54,8 +54,7 @@ func readerFromURL(path string) (io.ReadCloser, error) {
 // to a file or a url.
 func NewConfig(path string) (cfg Config, err error) {
 	var readCloser io.ReadCloser
-	_, err = url.ParseRequestURI(path)
-	if err == nil {
+	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
 		readCloser, err = readerFromURL(path)
 	} else {
 		readCloser, err = os.Open(path)
