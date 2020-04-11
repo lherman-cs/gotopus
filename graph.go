@@ -28,7 +28,7 @@ func NewNode(j Job, id string) *Node {
 
 // detectCircularDependency traverses the whole graph and find a circular dependency.
 // When a circular dependency, the function will return an error with a friendly message
-// to show where the circular dependency occured.
+// to show where the circular dependency occurred.
 func detectCircularDependency(root *Node) error {
 	unresolved := make(map[*Node]struct{})
 	resolved := make(map[*Node]struct{})
