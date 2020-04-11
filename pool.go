@@ -77,11 +77,6 @@ func (w *Worker) Execute(n *Node) error {
 		w.Stderr = w.Stdout
 	}
 
-	jobName := n.Job.Name
-	if jobName == "" {
-		jobName = n.ID
-	}
-
 	jobEnv := make(Env)
 	jobEnv.SetBuiltin("JOB_ID", n.ID)
 	jobEnv.SetBuiltin("JOB_NAME", n.Job.Name)
