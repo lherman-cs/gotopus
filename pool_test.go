@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"runtime"
 	"strings"
 	"sync"
@@ -64,5 +65,118 @@ func TestWorkerExecuteWithAndedCommands(t *testing.T) {
 
 	if !strings.Contains(out, "test2") {
 		t.Fatalf("expected the output to contain test2, but got \"%s\"", out)
+	}
+}
+
+func TestWorkerExecuteSetsBuiltinEnvironmentVariables(t *testing.T) {
+	builtinEnvs := []string{"JOB_ID", "JOB_NAME", "STEP_NAME", "WORKER_ID"}
+	for i, env := range builtinEnvs {
+		builtinEnvs[i] = EnvBuiltinPrefix + env
+	}
+	var args []string
+	for _, env := range builtinEnvs {
+		args = append(args, fmt.Sprintf("%s=${%s}", env, env))
+	}
+	cmd := "echo " + strings.Join(args, ",")
+	steps := []Step{{Name: "step_name", Run: cmd}}
+	job := Job{Name: "job_name", Steps: steps}
+	node := NewNode(job, "job_id")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	submit := PoolStart(ctx, 0)
+	var stdoutBuf, stderrBuf bytes.Buffer
+	result := make(chan error)
+	submit(func(w Worker) {
+		w.Stdout = &stdoutBuf
+		w.Stderr = &stderrBuf
+		result <- w.Execute(node)
+	})
+
+	err := <-result
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out := stdoutBuf.String()
+	out = strings.TrimSpace(out)
+	fields := strings.Split(out, ",")
+	actualEnvs := make(map[string]string)
+	for _, field := range fields {
+		tokens := strings.Split(field, "=")
+		k, v := tokens[0], tokens[1]
+		actualEnvs[k] = v
+	}
+
+	expectedEnvs := map[string]string{
+		EnvBuiltinPrefix + "JOB_ID":    "job_id",
+		EnvBuiltinPrefix + "JOB_NAME":  "job_name",
+		EnvBuiltinPrefix + "STEP_NAME": "step_name",
+		EnvBuiltinPrefix + "WORKER_ID": "0",
+	}
+
+	for _, env := range builtinEnvs {
+		actual, ok := actualEnvs[env]
+		if !ok {
+			t.Fatalf("expected the output to contain %s key", env)
+		}
+
+		expected := expectedEnvs[env]
+		if actual != expected {
+			t.Fatalf("expected %s value to be %s, but got %s", env, expected, actual)
+		}
+	}
+}
+
+func TestWorkerExecuteSetsUserEnvironmentVariables(t *testing.T) {
+	userEnvs := map[string]string{
+		"KEY1": "VALUE1",
+		"KEY2": "VALUE2",
+	}
+	var args []string
+	for key := range userEnvs {
+		args = append(args, fmt.Sprintf("%s=${%s}", key, key))
+	}
+	cmd := "echo " + strings.Join(args, ",")
+	steps := []Step{{Name: "step_name", Run: cmd, Env: userEnvs}}
+	job := Job{Name: "job_name", Steps: steps}
+	node := NewNode(job, "job_id")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	submit := PoolStart(ctx, 0)
+	var stdoutBuf, stderrBuf bytes.Buffer
+	result := make(chan error)
+	submit(func(w Worker) {
+		w.Stdout = &stdoutBuf
+		w.Stderr = &stderrBuf
+		result <- w.Execute(node)
+	})
+
+	err := <-result
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out := stdoutBuf.String()
+	out = strings.TrimSpace(out)
+	fields := strings.Split(out, ",")
+	actualEnvs := make(map[string]string)
+	for _, field := range fields {
+		tokens := strings.Split(field, "=")
+		k, v := tokens[0], tokens[1]
+		actualEnvs[k] = v
+	}
+
+	for env := range userEnvs {
+		actual, ok := actualEnvs[env]
+		if !ok {
+			t.Fatalf("expected the output to contain %s key", env)
+		}
+
+		expected := userEnvs[env]
+		if actual != expected {
+			t.Fatalf("expected %s value to be %s, but got %s", env, expected, actual)
+		}
 	}
 }
