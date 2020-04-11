@@ -18,7 +18,7 @@ type Env map[string]interface{}
 // Set sets value with key. If key exists in the environment already,
 // it'll be overwritten
 func (e Env) Set(key string, value interface{}) {
-	e[key] = fmt.Sprint(value)
+	e[key] = value
 }
 
 // SetBuiltin is similar to Set, but the key will be prefixed with EnvBuiltinPrefix
