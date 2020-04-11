@@ -8,7 +8,7 @@ import (
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s <config_path> ...\n\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s <url or filepath> ...\n\n", os.Args[0])
 		flag.PrintDefaults()
 	}
 
