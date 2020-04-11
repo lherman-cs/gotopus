@@ -115,8 +115,8 @@ func TestNewGraphWithNoDependencies(t *testing.T) {
 	}
 
 	expectedIDs := map[string]struct{}{
-		"job1": struct{}{},
-		"job2": struct{}{},
+		"job1": {},
+		"job2": {},
 	}
 
 	for dependent := range graph.Dependents {
@@ -148,7 +148,7 @@ func TestNewGraphWithDependencies(t *testing.T) {
 	}
 
 	expectedIDs := map[string][]string{
-		"job1": []string{"job3"},
+		"job1": {"job3"},
 		"job2": nil,
 	}
 
