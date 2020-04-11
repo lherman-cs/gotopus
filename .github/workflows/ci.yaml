@@ -39,5 +39,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
-      - name: Warm up gobinaries CDN cache
-        run: curl -sf https://gobinaries.com/lherman-cs/gotopus | sh
