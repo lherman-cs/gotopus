@@ -5,11 +5,15 @@ import (
 	"io"
 )
 
+// ResultNode represents a node that has been executed. ResultNode is used
+// to pass back a result from a separate goroutine to main goroutine.
 type ResultNode struct {
 	*Node
 	Err error
 }
 
+// nextRunnableNodes finds a list of nodes from waitingNodes that can be run
+// in concurrent safely.
 func nextRunnableNodes(waitingNodes, doneNodes map[*Node]struct{}) []*Node {
 	var runnableNodes []*Node
 outer:
@@ -24,6 +28,8 @@ outer:
 	return runnableNodes
 }
 
+// Run builds a dependency graph based on given cfg, and will schedule jobs
+// to a pool of workers that will run these jobs concurrently.
 func Run(cfg Config, stdout, stderr io.Writer, maxWorkers uint64) error {
 	graph, err := NewGraph(cfg)
 	if err != nil {
