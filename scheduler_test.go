@@ -165,3 +165,19 @@ func TestRunWithMultipleSteps(t *testing.T) {
 		t.Fatalf("expected first line to be \"%s\", but got \"%s\"", "step2", lines[1])
 	}
 }
+
+func TestRunWithStepHasError(t *testing.T) {
+	steps := []Step{
+		{Run: "exit 1"},
+	}
+	job := Job{Steps: steps}
+	cfg := Config{
+		Jobs: map[string]Job{"job1": job},
+	}
+
+	var stdoutBuf bytes.Buffer
+	err := Run(cfg, &stdoutBuf, nil, 0)
+	if err == nil {
+		t.Fatal("expected to get an error")
+	}
+}
