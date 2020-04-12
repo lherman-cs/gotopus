@@ -16,6 +16,10 @@ var (
 )
 
 func init() {
+	initExecuteCmd()
+}
+
+func initExecuteCmd() {
 	if runtime.GOOS == "windows" {
 		executeCmd = func(ctx context.Context, cmd string) *exec.Cmd {
 			return exec.CommandContext(ctx, "cmd", "/C", cmd)
