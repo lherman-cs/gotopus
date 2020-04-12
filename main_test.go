@@ -42,7 +42,7 @@ jobs:
 	}
 }
 
-func TestStartWithError(t *testing.T) {
+func TestStartWithCircularDependencyError(t *testing.T) {
 	tmp, err := ioutil.TempFile("", "test_*.yaml")
 	if err != nil {
 		t.Fatal(err)
