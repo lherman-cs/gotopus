@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func main() {
+func Start() int {
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s <url or filepath> ...\n\n", os.Args[0])
 		flag.PrintDefaults()
@@ -19,7 +19,7 @@ func main() {
 
 	if len(args) == 0 {
 		flag.Usage()
-		os.Exit(2)
+		return 2
 	}
 
 	configs := make([]Config, len(args))
@@ -27,7 +27,7 @@ func main() {
 		cfg, err := NewConfig(configPath)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(2)
+			return 2
 		}
 		configs[i] = cfg
 	}
@@ -36,7 +36,12 @@ func main() {
 		err := Run(config, os.Stdout, os.Stderr, maxWorkers)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(2)
+			return 2
 		}
 	}
+	return 0
+}
+
+func main() {
+	os.Exit(Start())
 }
