@@ -1,7 +1,0 @@
-jobs:
-  job1:
-    steps:
-      - run: "curl https://jsonplaceholder.typicode.com/todos/1"
-  job2:
-    steps:
-      - run: "curl https://jsonplaceholder.typicode.com/todos/1"
