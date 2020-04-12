@@ -209,3 +209,21 @@ func TestWorkerExecuteErrorStep(t *testing.T) {
 		t.Fatalf("expected the output to not contain done, but got \"%s\"", out)
 	}
 }
+
+func TestWorkerExecuteWithoutStdout(t *testing.T) {
+	job := Job{Steps: nil}
+	node := NewNode(job, "job1")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	submit := PoolStart(ctx, 0)
+	result := make(chan error)
+	submit(func(w Worker) {
+		result <- w.Execute(node)
+	})
+
+	err := <-result
+	if err == nil {
+		t.Fatal("expected to get an error")
+	}
+}
