@@ -196,3 +196,17 @@ func TestNewGraphWithCircularDependency(t *testing.T) {
 		t.Fatal("expected to get an error about circular dependency")
 	}
 }
+
+func TestNewGraphDependencyNotExist(t *testing.T) {
+	var cfg Config
+	var job Job
+
+	cfg.Jobs = make(map[string]Job)
+	job.Needs = []string{"job2"}
+	cfg.Jobs["job1"] = job
+
+	_, err := NewGraph(cfg)
+	if err == nil {
+		t.Fatal("expected to get an error")
+	}
+}
