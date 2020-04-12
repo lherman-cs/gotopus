@@ -247,9 +247,21 @@ func TestWorkerExecuteWithoutStdout(t *testing.T) {
 	}
 }
 
-func TestExecuteCmdNoShell(t *testing.T) {
-	err := os.Unsetenv("PATH")
+func TestInitExecuteCmdNoShell(t *testing.T) {
+	err := os.Unsetenv("SHELL")
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	err = os.Unsetenv("PATH")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		recover()
+	}()
+	executeCmd = nil
+	initExecuteCmd()
+	t.Fatal("expected to panic when there's no shell")
 }
