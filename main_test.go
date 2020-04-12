@@ -123,3 +123,26 @@ func TestMainWithNoArgs(t *testing.T) {
 	}
 	t.Fatalf("process ran with err %v, want exit status 2", err)
 }
+
+func TestIgnoreMain(t *testing.T) {
+	tmp, err := ioutil.TempFile("", "test_*.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		tmp.Close()
+		os.Remove(tmp.Name())
+	}()
+
+	yamlStr := `
+jobs:
+  job:`
+	_, err = io.Copy(tmp, strings.NewReader(yamlStr))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	os.Args = []string{"test", tmp.Name()}
+
+	main()
+}
