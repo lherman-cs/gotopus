@@ -1,0 +1,12 @@
+jobs:
+  job1:
+    steps:
+      - run: sleep 1 && echo "job1"
+  job2:
+    needs:
+      - job1
+    steps:
+      - run: echo "job2"
+  job3:
+    steps:
+      - run: echo "job3"
