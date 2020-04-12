@@ -97,3 +97,10 @@ jobs:
 		t.Fatalf("expected step run to be \"exit\", but got %s", step.Run)
 	}
 }
+
+func TestNewConfigFromInvalidURL(t *testing.T) {
+	_, err := NewConfig("https://this-url-must-be-broken.test")
+	if err == nil {
+		t.Fatal("expected to get an error")
+	}
+}
