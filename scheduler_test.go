@@ -134,3 +134,34 @@ func TestRunWithCircularDependency(t *testing.T) {
 		t.Fatal("expected to get an error")
 	}
 }
+
+func TestRunWithMultipleSteps(t *testing.T) {
+	steps := []Step{
+		{Run: "echo step1"},
+		{Run: "echo step2"},
+	}
+	job := Job{Steps: steps}
+	cfg := Config{
+		Jobs: map[string]Job{"job1": job},
+	}
+
+	var stdoutBuf, stderrBuf bytes.Buffer
+	err := Run(cfg, &stdoutBuf, &stderrBuf, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stdout := strings.TrimSpace(stdoutBuf.String())
+	lines := strings.Split(stdout, "\n")
+	if len(lines) != 2 {
+		t.Fatalf("expected to get %d lines, but got %d lines", 2, len(lines))
+	}
+
+	if lines[0] != "step1" {
+		t.Fatalf("expected first line to be \"%s\", but got \"%s\"", "step1", lines[0])
+	}
+
+	if lines[1] != "step2" {
+		t.Fatalf("expected first line to be \"%s\", but got \"%s\"", "step2", lines[1])
+	}
+}
