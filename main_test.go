@@ -4,7 +4,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"strings"
 	"testing"
 )
@@ -105,21 +104,4 @@ jobs:
 	if code == 0 {
 		t.Fatalf("expected program to exit with non-zero, but got %d", code)
 	}
-}
-
-func TestMainWithNoArgs(t *testing.T) {
-	if os.Getenv("BE_MAIN") == "1" {
-		main()
-		return
-	}
-	cmd := exec.Command(os.Args[0], "-test.run=TestMainWithNoArgs")
-	cmd.Env = append(os.Environ(), "BE_MAIN=1")
-	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok {
-		if e.ExitCode() == 0 {
-			t.Fatalf("expected program to exit with non-zero, but got %d", e.ExitCode())
-		}
-		return
-	}
-	t.Fatalf("process ran with err %v, want exit status 2", err)
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -243,5 +244,12 @@ func TestWorkerExecuteWithoutStdout(t *testing.T) {
 	err := <-result
 	if err == nil {
 		t.Fatal("expected to get an error")
+	}
+}
+
+func TestExecuteCmdNoShell(t *testing.T) {
+	err := os.Unsetenv("PATH")
+	if err != nil {
+		t.Fatal(err)
 	}
 }
