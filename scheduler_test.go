@@ -166,6 +166,34 @@ func TestRunWithMultipleSteps(t *testing.T) {
 	}
 }
 
+func TestRunWithDependency(t *testing.T) {
+	job1 := Job{Steps: []Step{{Run: "echo job1"}}}
+	job2 := Job{Steps: []Step{{Run: "echo job2"}}, Needs: []string{"job1"}}
+	cfg := Config{
+		Jobs: map[string]Job{"job1": job1, "job2": job2},
+	}
+
+	var stdoutBuf bytes.Buffer
+	err := Run(cfg, &stdoutBuf, nil, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stdout := strings.TrimSpace(stdoutBuf.String())
+	lines := strings.Split(stdout, "\n")
+	if len(lines) != 2 {
+		t.Fatalf("expected to get %d lines, but got %d lines", 2, len(lines))
+	}
+
+	if lines[0] != "job1" {
+		t.Fatalf("expected first line to be \"%s\", but got \"%s\"", "job1", lines[0])
+	}
+
+	if lines[1] != "job2" {
+		t.Fatalf("expected first line to be \"%s\", but got \"%s\"", "job2", lines[1])
+	}
+}
+
 func TestRunWithStepHasError(t *testing.T) {
 	steps := []Step{
 		{Run: "exit 1"},
