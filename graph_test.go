@@ -87,6 +87,13 @@ func TestDetectCircularDependencyNoCycle(t *testing.T) {
 	}
 }
 
+func TestDetectCircularDependencyWhenNil(t *testing.T) {
+	err := detectCircularDependency(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestNewGraphWithoutJobs(t *testing.T) {
 	var cfg Config
 
