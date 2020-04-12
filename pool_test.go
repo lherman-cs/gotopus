@@ -180,3 +180,32 @@ func TestWorkerExecuteSetsUserEnvironmentVariables(t *testing.T) {
 		}
 	}
 }
+
+func TestWorkerExecuteErrorStep(t *testing.T) {
+	steps := []Step{
+		{Run: "exit 1"},
+		{Run: "echo done"},
+	}
+	job := Job{Steps: steps}
+	node := NewNode(job, "job1")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	submit := PoolStart(ctx, 0)
+	var stdoutBuf bytes.Buffer
+	result := make(chan error)
+	submit(func(w Worker) {
+		w.Stdout = &stdoutBuf
+		result <- w.Execute(node)
+	})
+
+	err := <-result
+	if err == nil {
+		t.Fatal("expected to get an error")
+	}
+
+	out := stdoutBuf.String()
+	if strings.Contains(out, "done") {
+		t.Fatalf("expected the output to not contain done, but got \"%s\"", out)
+	}
+}
