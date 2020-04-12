@@ -119,3 +119,18 @@ func TestRunWithAndedCommands(t *testing.T) {
 		t.Fatalf("expected the error output to be empty, but got \"%s\"", stderr)
 	}
 }
+
+func TestRunWithCircularDependency(t *testing.T) {
+	cfg := Config{
+		Jobs: map[string]Job{
+			"job1": {Needs: []string{"job2"}},
+			"job2": {Needs: []string{"job1"}},
+		},
+	}
+
+	var stdoutBuf bytes.Buffer
+	err := Run(cfg, &stdoutBuf, nil, 0)
+	if err == nil {
+		t.Fatal("expected to get an error")
+	}
+}
