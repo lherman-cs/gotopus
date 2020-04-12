@@ -37,6 +37,24 @@ func TestPoolStartWithConcurrentJobs(t *testing.T) {
 	}
 }
 
+func TestPoolStartForWorkerReusability(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	submit := PoolStart(ctx, 0)
+	done := make(chan struct{})
+	submit(PoolJob(func(w Worker) {
+		close(done)
+	}))
+	before := runtime.NumGoroutine()
+	<-done
+	submit(PoolJob(func(w Worker) {}))
+	after := runtime.NumGoroutine()
+	if before != after {
+		t.Fatalf("Expected to reuse the same worker, but got before=%d and after=%d", before, after)
+	}
+}
+
 func TestWorkerExecuteWithAndedCommands(t *testing.T) {
 	steps := []Step{{Name: "step1", Run: "echo test1 && echo test2"}}
 	job := Job{Steps: steps}
