@@ -261,7 +261,6 @@ func TestInitExecuteCmdNoShell(t *testing.T) {
 	defer func() {
 		recover()
 	}()
-	executeCmd = nil
 	initExecuteCmd()
 	t.Fatal("expected to panic when there's no shell")
 }

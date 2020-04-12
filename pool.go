@@ -10,15 +10,10 @@ import (
 )
 
 var (
-	// executeCmd is a cross-platform function to run an arbitrary shell command
-	executeCmd func(context.Context, string) *exec.Cmd
+	executeCmd = initExecuteCmd()
 )
 
-func init() {
-	initExecuteCmd()
-}
-
-func initExecuteCmd() {
+func initExecuteCmd() func(context.Context, string) *exec.Cmd {
 	shellPath := os.Getenv("SHELL")
 	// If we can't find the current shell, we'll try to lookup the shell paths
 	supportedShells := []string{"bash", "sh", "zsh"}
@@ -35,7 +30,7 @@ func initExecuteCmd() {
 		panic("failed to find a shell")
 	}
 
-	executeCmd = func(ctx context.Context, cmd string) *exec.Cmd {
+	return func(ctx context.Context, cmd string) *exec.Cmd {
 		return exec.CommandContext(ctx, shellPath, "-c", cmd)
 	}
 }
