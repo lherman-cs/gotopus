@@ -9,7 +9,7 @@ import (
 )
 
 func TestStartWithNoConfigs(t *testing.T) {
-	code := Start()
+	code := Start("test")
 	if code == 0 {
 		t.Fatalf("expected program to exit with non-zero, but got %d", code)
 	}
@@ -36,8 +36,7 @@ jobs:
 		t.Fatal(err)
 	}
 
-	os.Args = []string{"fake", tmp.Name()}
-	code := Start()
+	code := Start("test", tmp.Name())
 	if code != 0 {
 		t.Fatalf("expected program to exit with 0, but got %d", code)
 	}
@@ -67,8 +66,7 @@ jobs:
 		t.Fatal(err)
 	}
 
-	os.Args = []string{"fake", tmp.Name()}
-	code := Start()
+	code := Start("test", tmp.Name())
 	if code == 0 {
 		t.Fatalf("expected program to exit with non-zero, but got %d", code)
 	}

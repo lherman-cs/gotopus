@@ -6,19 +6,20 @@ import (
 	"os"
 )
 
-func Start() int {
-	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s <url or filepath> ...\n\n", os.Args[0])
-		flag.PrintDefaults()
+func Start(programName string, args ...string) int {
+	flagSet := flag.NewFlagSet(programName, flag.ExitOnError)
+	flagSet.Usage = func() {
+		fmt.Fprintf(flagSet.Output(), "Usage: %s <url or filepath> ...\n\n", programName)
+		flagSet.PrintDefaults()
 	}
 
 	var maxWorkers uint64
-	flag.Uint64Var(&maxWorkers, "max_workers", 0, "limits the number of workers that can run concurrently (default 0 or limitless)")
-	flag.Parse()
-	args := flag.Args()
+	flagSet.Uint64Var(&maxWorkers, "max_workers", 0, "limits the number of workers that can run concurrently (default 0 or limitless)")
+	flagSet.Parse(args)
+	args = flagSet.Args()
 
 	if len(args) == 0 {
-		flag.Usage()
+		flagSet.Usage()
 		return 2
 	}
 
@@ -43,5 +44,5 @@ func Start() int {
 }
 
 func main() {
-	os.Exit(Start())
+	os.Exit(Start(os.Args[0], os.Args[1:]...))
 }
