@@ -7,7 +7,6 @@ import (
 	"math"
 	"os"
 	"os/exec"
-	"runtime"
 )
 
 var (
@@ -20,27 +19,21 @@ func init() {
 }
 
 func initExecuteCmd() {
-	if runtime.GOOS == "windows" {
-		executeCmd = func(ctx context.Context, cmd string) *exec.Cmd {
-			return exec.CommandContext(ctx, "cmd", "/C", cmd)
-		}
-	} else {
-		shellPath := os.Getenv("SHELL")
-		// If we can't find the current shell, we'll try to lookup the shell paths
-		supportedShells := []string{"bash", "sh", "zsh"}
-		if shellPath == "" {
-			for _, sh := range supportedShells {
-				path, err := exec.LookPath(sh)
-				if err == nil {
-					shellPath = path
-				}
+	shellPath := os.Getenv("SHELL")
+	// If we can't find the current shell, we'll try to lookup the shell paths
+	supportedShells := []string{"bash", "sh", "zsh"}
+	if shellPath == "" {
+		for _, sh := range supportedShells {
+			path, err := exec.LookPath(sh)
+			if err == nil {
+				shellPath = path
 			}
 		}
+	}
 
-		if shellPath != "" {
-			executeCmd = func(ctx context.Context, cmd string) *exec.Cmd {
-				return exec.CommandContext(ctx, shellPath, "-c", cmd)
-			}
+	if shellPath != "" {
+		executeCmd = func(ctx context.Context, cmd string) *exec.Cmd {
+			return exec.CommandContext(ctx, shellPath, "-c", cmd)
 		}
 	}
 
