@@ -31,14 +31,12 @@ func initExecuteCmd() {
 		}
 	}
 
-	if shellPath != "" {
-		executeCmd = func(ctx context.Context, cmd string) *exec.Cmd {
-			return exec.CommandContext(ctx, shellPath, "-c", cmd)
-		}
+	if shellPath == "" {
+		panic("failed to find a shell")
 	}
 
-	if executeCmd == nil {
-		panic("failed to find a shell")
+	executeCmd = func(ctx context.Context, cmd string) *exec.Cmd {
+		return exec.CommandContext(ctx, shellPath, "-c", cmd)
 	}
 }
 
