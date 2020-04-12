@@ -16,6 +16,13 @@ func TestStartWithNoConfigs(t *testing.T) {
 	}
 }
 
+func TestStartWithWrongPath(t *testing.T) {
+	code := Start("test", "this-is-definitely-not-a-valid-config-file.yaml")
+	if code == 0 {
+		t.Fatalf("expected program to exit with non-zero, but got %d", code)
+	}
+}
+
 func TestStartWithConfig(t *testing.T) {
 	tmp, err := ioutil.TempFile("", "test_*.yaml")
 	if err != nil {
